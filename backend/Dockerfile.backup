@@ -1,0 +1,26 @@
+# ============================================
+# ScriptHub.id — Database Backup Container
+# ============================================
+# Lightweight Alpine container with pg_dump and aws-cli
+# Runs daily backup to S3 via cron
+
+FROM postgres:16-alpine
+
+# Install aws-cli and dependencies
+RUN apk add --no-cache \
+    aws-cli \
+    bash \
+    gzip \
+    bc
+
+# Copy scripts
+COPY scripts/backup.sh /scripts/backup.sh
+COPY scripts/restore.sh /scripts/restore.sh
+RUN chmod +x /scripts/backup.sh /scripts/restore.sh
+
+# Create log directory
+RUN mkdir -p /var/log && touch /var/log/backup.log
+
+# Start in cron mode by default
+ENTRYPOINT ["/scripts/backup.sh"]
+CMD ["--cron"]
