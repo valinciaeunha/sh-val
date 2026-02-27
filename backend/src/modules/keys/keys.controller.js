@@ -1,4 +1,5 @@
 import * as keysService from "./keys.service.js";
+import * as getkeyService from "../admin/getkey.service.js";
 import * as plansService from "../plans/plans.service.js";
 import { body, validationResult } from "express-validator";
 import logger from "../../utils/logger.js";
@@ -225,4 +226,30 @@ export const getUserScripts = async (req, res) => {
     }
 };
 
+/**
+ * Get user's Get Key system settings
+ * GET /api/keys/getkey-settings
+ */
+export const getGetkeySettings = async (req, res) => {
+    try {
+        const settings = await getkeyService.getGetkeySettings(req.user.userId);
+        res.json({ success: true, data: settings });
+    } catch (error) {
+        logger.error("Get getkey settings error: %o", error);
+        res.status(500).json({ error: "ServerError", message: "Failed to fetch Get Key settings" });
+    }
+};
 
+/**
+ * Update user's Get Key system settings
+ * PUT /api/keys/getkey-settings
+ */
+export const updateGetkeySettings = async (req, res) => {
+    try {
+        const settings = await getkeyService.updateGetkeySettings(req.user.userId, req.body);
+        res.json({ success: true, data: settings, message: "Get Key settings updated" });
+    } catch (error) {
+        logger.error("Update getkey settings error: %o", error);
+        res.status(500).json({ error: "ServerError", message: "Failed to update Get Key settings" });
+    }
+};

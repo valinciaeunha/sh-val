@@ -36,9 +36,11 @@ router.delete("/keys/:id", adminController.deleteKey);
 router.get("/hubs", adminController.getHubs);
 router.delete("/hubs/:id", adminController.deleteHub);
 router.patch("/hubs/:id/status", adminController.updateHubStatus);
+router.patch("/hubs/:id/owner", adminController.changeHubOwner);
 
 router.get("/executors", adminController.getExecutors);
 router.patch("/executors/:id/status", adminController.updateExecutorStatus);
+router.patch("/executors/:id/owner", adminController.changeExecutorOwner);
 
 router.get("/plans", adminController.getPlans);
 router.patch("/plans/:id", adminController.updatePlan);

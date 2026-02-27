@@ -25,6 +25,7 @@ const config = {
     database: process.env.POSTGRES_DB || 'scripthub',
     user: process.env.POSTGRES_USER || 'scripthub_user',
     password: process.env.POSTGRES_PASSWORD,
+    
     url: process.env.DATABASE_URL,
     ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : false,
     max: 20,
@@ -85,8 +86,10 @@ const config = {
     corsOrigins: [
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://getkey.localhost:3000',
       'https://scripthub.id',
       'https://www.scripthub.id',
+      'https://getkey.scripthub.id',
       ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [])
     ],
   },

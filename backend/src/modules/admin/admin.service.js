@@ -361,6 +361,23 @@ export const updateHubStatus = async (hubId, status) => {
     return result.rows[0];
 };
 
+/** Change hub owner (admin) */
+export const changeHubOwner = async (hubId, newOwnerUsername) => {
+    const userResult = await pool.query(
+        `SELECT id, username, display_name FROM users WHERE username = $1 AND account_status != 'deleted'`,
+        [newOwnerUsername]
+    );
+    if (userResult.rowCount === 0) throw { statusCode: 404, message: `User "${newOwnerUsername}" not found` };
+    const newOwner = userResult.rows[0];
+
+    const result = await pool.query(
+        `UPDATE hubs SET owner_id = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, slug`,
+        [newOwner.id, hubId]
+    );
+    if (result.rowCount === 0) throw { statusCode: 404, message: 'Hub not found' };
+    return { ...result.rows[0], new_owner: newOwner.username };
+};
+
 /** Get paginated executors list for admin */
 export const getAdminExecutors = async ({ limit = 50, offset = 0, search = '', status = '' } = {}) => {
     const s = `%${search}%`;
@@ -395,6 +412,24 @@ export const updateExecutorStatus = async (executorId, status) => {
     );
     if (result.rowCount === 0) throw { statusCode: 404, message: 'Executor not found' };
     return result.rows[0];
+};
+
+/** Change executor owner (admin) */
+export const changeExecutorOwner = async (executorId, newOwnerUsername) => {
+    // Find the new owner by username
+    const userResult = await pool.query(
+        `SELECT id, username, display_name FROM users WHERE username = $1 AND account_status != 'deleted'`,
+        [newOwnerUsername]
+    );
+    if (userResult.rowCount === 0) throw { statusCode: 404, message: `User "${newOwnerUsername}" not found` };
+    const newOwner = userResult.rows[0];
+
+    const result = await pool.query(
+        `UPDATE executors SET owner_id = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, slug`,
+        [newOwner.id, executorId]
+    );
+    if (result.rowCount === 0) throw { statusCode: 404, message: 'Executor not found' };
+    return { ...result.rows[0], new_owner: newOwner.username };
 };
 
 /** Get paginated user plans for admin */

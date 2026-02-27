@@ -17,7 +17,12 @@ export const createScript = async (scriptData) => {
         hasKeySystem, keySystemUrl, isPaid, purchaseUrl
     } = scriptData;
     const slug = generateRandomSlug();
-    const status = hubId ? 'published' : 'under_review';
+    const status = 'published'; // All scripts default to published
+
+    let finalKeySystemUrl = keySystemUrl;
+    if (finalKeySystemUrl === 'scripthub') {
+        finalKeySystemUrl = `https://getkey.scripthub.id/${slug}`;
+    }
 
     const query = `
     INSERT INTO scripts (
@@ -30,7 +35,7 @@ export const createScript = async (scriptData) => {
 
     const values = [
         title, slug, description, thumbnailUrl, loaderUrl, hubId || null, gameId || null, ownerId, status,
-        hasKeySystem || false, keySystemUrl || null, isPaid || false, purchaseUrl || null
+        hasKeySystem || false, finalKeySystemUrl || null, isPaid || false, purchaseUrl || null
     ];
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -278,6 +283,14 @@ export const updateScript = async (id, updateData) => {
         hasKeySystem, keySystemUrl, isPaid, purchaseUrl
     } = updateData;
 
+    let finalKeySystemUrl = keySystemUrl;
+    if (finalKeySystemUrl === 'scripthub') {
+        const scriptRes = await pool.query('SELECT slug FROM scripts WHERE id = $1', [id]);
+        if (scriptRes.rows.length > 0) {
+            finalKeySystemUrl = `https://getkey.scripthub.id/${scriptRes.rows[0].slug}`;
+        }
+    }
+
     const setClause = [];
     const values = [id];
     let paramIndex = 2;
@@ -298,7 +311,7 @@ export const updateScript = async (id, updateData) => {
     addParam('game_id', gameId);
     addParam('hub_id', hubId);
     addParam('has_key_system', hasKeySystem);
-    addParam('key_system_url', keySystemUrl);
+    addParam('key_system_url', finalKeySystemUrl);
     addParam('is_paid', isPaid);
     addParam('purchase_url', purchaseUrl);
 

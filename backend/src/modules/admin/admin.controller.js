@@ -219,6 +219,19 @@ export const updateHubStatus = async (req, res) => {
     }
 };
 
+/** PATCH /api/admin/hubs/:id/owner */
+export const changeHubOwner = async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) return res.status(400).json({ error: 'BadRequest', message: 'username is required' });
+        const result = await adminService.changeHubOwner(req.params.id, username);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        const code = error.statusCode || 500;
+        res.status(code).json({ error: 'Error', message: error.message || 'Failed to change hub owner' });
+    }
+};
+
 /** GET /api/admin/executors */
 export const getExecutors = async (req, res) => {
     try {
@@ -243,6 +256,19 @@ export const updateExecutorStatus = async (req, res) => {
     } catch (error) {
         const code = error.statusCode || 500;
         res.status(code).json({ error: 'Error', message: error.message || 'Failed to update executor status' });
+    }
+};
+
+/** PATCH /api/admin/executors/:id/owner */
+export const changeExecutorOwner = async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) return res.status(400).json({ error: 'BadRequest', message: 'username is required' });
+        const result = await adminService.changeExecutorOwner(req.params.id, username);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        const code = error.statusCode || 500;
+        res.status(code).json({ error: 'Error', message: error.message || 'Failed to change executor owner' });
     }
 };
 

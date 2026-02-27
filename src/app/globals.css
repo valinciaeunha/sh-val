@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/*
+ * Zed.dev-derived design tokens
+ * Extracted from https://zed.dev computed styles
+ */
+
+@theme inline {
+  /* Offgray palette (zed.dev custom) */
+  --color-offgray-50: #f1f2f4;
+  --color-offgray-100: #dddfe4;
+  --color-offgray-200: #c6cad2;
+  --color-offgray-300: #b8bdc7;
+  --color-offgray-400: #98a0ae;
+  --color-offgray-500: #818b9c;
+  --color-offgray-600: #6c7689;
+  --color-offgray-700: #5a6372;
+  --color-offgray-800: #4c5461;
+  --color-offgray-900: #363b45;
+
+  /* Surface tones */
+  --color-surface-root: hsl(218, 13%, 7.5%);
+  --color-surface-nav: #121417;
+  --color-surface-panel: hsl(218, 13%, 10%);
+  --color-surface-hover: oklch(0.25 0.01 250);
+  --color-surface-active: oklch(0.28 0.01 250);
+
+  /* Border */
+  --color-border-default: #bedbff80;
+  --color-border-subtle: rgba(190, 219, 255, 0.15);
+
+  /* Font family bindings */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+html {
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-surface-root);
+  color: var(--color-offgray-300);
+}
+
+/* Heading utility */
+.heading-base {
+  scroll-margin-top: calc(var(--spacing) * 24);
+  color: var(--color-offgray-50);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* Nav background utility */
+.nav-background {
+  background-color: var(--color-surface-nav);
+}
+
+/* Grid border utility */
+.grid-border-color {
+  border-color: var(--color-border-default);
+}
+
+/* Scrollbar hide utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
