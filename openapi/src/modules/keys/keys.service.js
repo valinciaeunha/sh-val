@@ -1,52 +1,4 @@
 ﻿import pool from "../../db/postgres.js";
-import crypto from "crypto";
-
-import { v4 as uuidv4 } from "uuid";
-
-/**
- * Generate a unique key value in the format SH-id<UUID> (max 32 chars)
- * @returns {string}
- */
-const generateKeyValue = () => {
-    // Generate UUID, remove dashes to make it a continuous hex string
-    // Limit to 27 chars + 5 chars for "SH-id" = 32 chars total
-    const uuidStr = uuidv4().replace(/-/g, "").substring(0, 27);
-    return `SH-id${uuidStr}`;
-};
-
-/**
- * Generate multiple license keys
- * @param {Object} data - { scriptId, ownerId, type, maxDevices, expiresAt, note, quantity }
- * @returns {Array} Created keys
- */
-export const generateKeys = async (data) => {
-    const { scriptId, ownerId, type, maxDevices, expiresAt, note, quantity } = data;
-    const client = await pool.connect();
-
-    try {
-        await client.query("BEGIN");
-
-        const keys = [];
-        for (let i = 0; i < quantity; i++) {
-            const keyValue = generateKeyValue();
-            const result = await client.query(
-                `INSERT INTO license_keys (key_value, script_id, owner_id, type, status, max_devices, expires_at, note)
-                 VALUES ($1, $2, $3, $4, 'unused', $5, $6, $7)
-                 RETURNING *`,
-                [keyValue, scriptId, ownerId, type, maxDevices, expiresAt || null, note || null]
-            );
-            keys.push(result.rows[0]);
-        }
-
-        await client.query("COMMIT");
-        return keys;
-    } catch (error) {
-        await client.query("ROLLBACK");
-        throw error;
-    } finally {
-        client.release();
-    }
-};
 
 /**
  * Validate a license key and optionally bind an HWID
@@ -57,6 +9,8 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
     const client = await pool.connect();
 
     try {
+        await client.query("BEGIN");
+
         // 1. Look up the key
         const keyResult = await client.query(
             `SELECT lk.*, s.title as script_title
@@ -67,6 +21,7 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
         );
 
         if (keyResult.rows.length === 0) {
+            await client.query("ROLLBACK");
             return { valid: false, message: "Invalid key. Key does not exist." };
         }
 
@@ -74,14 +29,17 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
 
         // 2. Check if key belongs to the correct script
         if (scriptId && key.script_id !== scriptId) {
+            await client.query("ROLLBACK");
             return { valid: false, message: "Key does not belong to this script." };
         }
 
         // 3. Check key status
         if (key.status === "revoked") {
+            await client.query("ROLLBACK");
             return { valid: false, message: "Key has been revoked by the owner." };
         }
         if (key.status === "expired") {
+            await client.query("ROLLBACK");
             return { valid: false, message: "Key has expired." };
         }
 
@@ -92,6 +50,7 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
                 `UPDATE license_keys SET status = 'expired' WHERE id = $1`,
                 [key.id]
             );
+            await client.query("COMMIT");
             return { valid: false, message: "Key has expired." };
         }
 
@@ -114,6 +73,7 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
             } else {
                 // New device — check max_devices limit
                 if (devices.length >= key.max_devices) {
+                    await client.query("ROLLBACK");
                     return {
                         valid: false,
                         message: `Device limit reached (${key.max_devices}). This key is already bound to ${devices.length} device(s).`,
@@ -140,6 +100,8 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
             );
         }
 
+        await client.query("COMMIT");
+
         return {
             valid: true,
             message: "Key is valid.",
@@ -152,10 +114,10 @@ export const validateKey = async ({ keyValue, scriptId, hwid }) => {
                 script_title: key.script_title,
             },
         };
+    } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
     } finally {
         client.release();
     }
 };
-
-
-
