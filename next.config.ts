@@ -64,6 +64,19 @@ const nextConfig: NextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.adsterra.com https://*.adstera.com https://*.adsterratech.com https://*.profitabledisplaynetwork.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: blob: https: http:",
+              "connect-src 'self' https://api.scripthub.id https://cdn.scripthub.id https://challenges.cloudflare.com https://*.adsterra.com",
+              "frame-src 'self' https://challenges.cloudflare.com https://*.adsterra.com https://*.profitabledisplaynetwork.com",
+              "worker-src 'self' blob:",
+            ].join('; ')
           }
         ],
       },
