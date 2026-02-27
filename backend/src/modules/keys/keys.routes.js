@@ -30,7 +30,7 @@ router.post("/public/start-session", async (req, res) => {
             return res.status(400).json({ error: "ValidationError", message: "scriptSlug is required" });
         }
 
-        const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+        const ip = req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
         const deviceId = req.headers["x-device-id"];
         const result = await publickeyService.startSession(scriptSlug, ip, deviceId);
 
@@ -56,7 +56,7 @@ router.post("/public/complete-checkpoint", async (req, res) => {
             return res.status(400).json({ error: "ValidationError", message: "sessionToken and checkpointIndex are required" });
         }
 
-        const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+        const ip = req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
         const deviceId = req.headers["x-device-id"];
         const result = await publickeyService.completeCheckpoint(sessionToken, checkpointIndex, ip, deviceId);
 
@@ -75,7 +75,7 @@ router.post("/public/verify-captcha", async (req, res) => {
             return res.status(400).json({ error: "ValidationError", message: "sessionToken and turnstileToken are required" });
         }
 
-        const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+        const ip = req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
         const deviceId = req.headers["x-device-id"];
         const result = await publickeyService.verifyCaptcha(sessionToken, turnstileToken, ip, deviceId);
 
@@ -105,7 +105,7 @@ router.post("/public/getkey", async (req, res) => {
             return res.status(400).json({ error: "ValidationError", message: "sessionToken is required" });
         }
 
-        const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+        const ip = req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
         const deviceId = req.headers["x-device-id"];
         const result = await publickeyService.generatePublicKey(sessionToken, ip, deviceId);
 
